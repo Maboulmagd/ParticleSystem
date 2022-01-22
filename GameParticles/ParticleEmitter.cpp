@@ -18,26 +18,27 @@ static const unsigned char squareColors[] =
 	200,  200,  0,  255, // Color   
 };
 
-static const double squareVertices[] =
+static const float squareVertices[] =
 {
-	-0.015,  -0.015, 0.0, // Size of Triangle  
-	 0.015,  -0.015, 0.0, // Size of Triangle  
-	-0.015,   0.015, 0.0, // Size of Triangle  
-	 0.015,   0.015, 0.0, // Size of Triangle  
+	-0.015f,  -0.015f, 0.0f, // Size of Triangle  
+	 0.015f,  -0.015f, 0.0f, // Size of Triangle  
+	-0.015f,   0.015f, 0.0f, // Size of Triangle  
+	 0.015f,   0.015f, 0.0f, // Size of Triangle  
 };
 
 ParticleEmitter::ParticleEmitter()
-	: start_position(0.0, 0.0, 0.0),
-	start_velocity(0.0, 1.0, 0.0),
+	: start_position(0.0f, 0.0f, 0.0f),
+	start_velocity(0.0f, 1.0f, 0.0f),
 	max_life(MAX_LIFE),
 	max_particles(NUM_PARTICLES),
-	spawn_frequency(0.0000001),
+	spawn_frequency(0.0000001f),
 	last_active_particle(-1),
 	particle_list(NUM_PARTICLES),
-	vel_variance(1.0, 4.0, 0.4),
-	pos_variance(1.0, 1.0, 1.0),
-	scale_variance(2.5),
-	headParticle(0)
+	vel_variance(1.0f, 4.0f, 0.4f),
+	pos_variance(1.0f, 1.0f, 1.0f),
+	scale_variance(2.5f),
+	headParticle(nullptr),
+	bufferCount(0)
 {
 	GlobalTimer.Toc();
 
@@ -59,11 +60,17 @@ void ParticleEmitter::SpawnParticle()
 		// create new particle
 		Particle *newParticle = new Particle();
 
+		//Trace::out("Alignment of Vect4D: %d\n", alignof(Vect4D));
+		//Trace::out("Size of Vect4D: %d\n", sizeof(Vect4D));
+
+		//Trace::out("Alignment of particle: %d\n", alignof(Particle));
+		//Trace::out("Size of particle: %d\n", sizeof(Particle));
+
 		// initialize the particle
 		newParticle->life = 0.0f;
 		newParticle->position = start_position;
 		newParticle->velocity = start_velocity;
-		newParticle->scale = Vect4D(2.0, 2.0, 2.0, 1.0);
+		newParticle->scale = Vect4D(2.0f, 2.0f, 2.0f, 1.0f);
 
 		// apply the variance
 		this->Execute(newParticle->position, newParticle->velocity, newParticle->scale);
@@ -81,10 +88,10 @@ void ParticleEmitter::update()
 {
 	// get current time
 	GlobalTimer.Toc();
-	double current_time = GlobalTimer.TimeInSeconds();
+	float current_time = GlobalTimer.TimeInSeconds();
 
 	// spawn particles
-	double time_elapsed = current_time - last_spawn;
+	float time_elapsed = current_time - last_spawn;
 
 	// update
 	while (spawn_frequency < time_elapsed)
@@ -211,7 +218,7 @@ void ParticleEmitter::draw()
 	Matrix cameraMatrix;
 
 	// get the camera matrix from OpenGL
-	glGetDoublev(GL_MODELVIEW_MATRIX, reinterpret_cast<double*>(&cameraMatrix));
+	glGetFloatv(GL_MODELVIEW_MATRIX, reinterpret_cast<float*>(&cameraMatrix));
 
 	// iterate throught the list of particles
 	std::list<Particle>::iterator it;
@@ -225,7 +232,7 @@ void ParticleEmitter::draw()
 		cameraMatrix.get(Matrix::MATRIX_ROW_3, &camPosVect);
 
 		// OpenGL goo... don't worrry about this
-		glVertexPointer(3, GL_DOUBLE, 0, squareVertices);
+		glVertexPointer(3, GL_FLOAT, 0, squareVertices);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
 		glEnableClientState(GL_COLOR_ARRAY);
@@ -257,7 +264,7 @@ void ParticleEmitter::draw()
 		tmp = scaleMatrix * transCamera * transParticle * rotParticle * scaleMatrix;
 
 		// set the transformation matrix
-		glLoadMatrixd(reinterpret_cast<double*>(&(tmp)));
+		glLoadMatrixf(reinterpret_cast<float*>(&(tmp)));
 
 		// squirrel away matrix for next update
 		tmp.get(Matrix::MATRIX_ROW_0, &it->curr_Row0);
@@ -295,10 +302,10 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 	// ( so now you know how it feels )   
 
 	// x - variance
-	double var = static_cast<double>(rand() % 1000) * 0.001f; // Var           
-	double sign = static_cast<double>(rand() % 2);  // Sign          
-	double *t_pos = reinterpret_cast<double*>(&pos);
-	double *t_var = &pos_variance[x];
+	float var = static_cast<float>(rand() % 1000) * 0.001f; // Var           
+	float sign = static_cast<float>(rand() % 2);  // Sign          
+	float *t_pos = reinterpret_cast<float*>(&pos);
+	float *t_var = &pos_variance[x];
 	if (sign == 0)
 	{
 		var *= -1.0;
@@ -306,68 +313,68 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 	*t_pos += *t_var * var;
 
 	// y - variance
-	var = static_cast<double>(rand() % 1000) * 0.001f;
-	sign = static_cast<double>(rand() % 2);
+	var = static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);
 	t_pos++;
 	t_var++;
-	if (sign == 0)
+	if (sign == 0.0f)
 	{
-		var *= -1.0;
+		var *= -1.0f;
 	}
 	*t_pos += *t_var * var;
 
 	// z - variance
-	var = static_cast<double>(rand() % 1000) * 0.001f;
-	sign = static_cast<double>(rand() % 2);
+	var = static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);
 	t_pos++;
 	t_var++;
-	if (sign == 0)
+	if (sign == 0.0f)
 	{
-		var *= -1.0;
+		var *= -1.0f;
 	}
 	*t_pos += *t_var * var;
 
-	var = static_cast<double>(rand() % 1000) * 0.001f;
-	sign = static_cast<double>(rand() % 2);
+	var = static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);
 
 	// x  - add velocity
 	t_pos = &vel[x];
 	t_var = &vel_variance[x];
-	if (sign == 0)
+	if (sign == 0.0f)
 	{
-		var *= -1.0;
+		var *= -1.0f;
 	}
 	*t_pos += *t_var * var;
 
 	// y - add velocity
-	var = static_cast<double>(rand() % 1000) * 0.001f;
-	sign = static_cast<double>(rand() % 2);
+	var = static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);
 	t_pos++;
 	t_var++;
-	if (sign == 0)
+	if (sign == 0.0f)
 	{
-		var *= -1.0;
+		var *= -1.0f;
 	}
 	*t_pos += *t_var * var;
 
 	// z - add velocity
-	var = static_cast<double>(rand() % 1000) * 0.001f;
-	sign = static_cast<double>(rand() % 2);
+	var = static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);
 	t_pos++;
 	t_var++;
-	if (sign == 0)
+	if (sign == 0.0f)
 	{
-		var *= -1.0;
+		var *= -1.0f;
 	}
 	*t_pos += *t_var * var;
 
 	// correct the sign
-	var = 2.0f * static_cast<double>(rand() % 1000) * 0.001f;
-	sign = static_cast<double>(rand() % 2);  
+	var = 2.0f * static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);  
 
-	if (sign == 0)
+	if (sign == 0.0f)
 	{
-		var *= -1.0;
+		var *= -1.0f;
 	}
 	sc = sc * var;
 }

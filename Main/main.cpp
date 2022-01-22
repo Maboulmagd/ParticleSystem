@@ -91,7 +91,7 @@ int main()
 			// set matrix to Model View
 			// push the inverseCameraMarix to stack
 			glMatrixMode(GL_MODELVIEW);
-			glLoadMatrixd(reinterpret_cast<double*>(&inverseCameraMatrix));
+			glLoadMatrixf(reinterpret_cast<float*>(&inverseCameraMatrix));
 			glPushMatrix(); // push the camera matrix
 
 			// update the emitter
