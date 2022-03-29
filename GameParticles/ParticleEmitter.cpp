@@ -220,6 +220,14 @@ void ParticleEmitter::draw()
 	// get the camera matrix from OpenGL
 	glGetFloatv(GL_MODELVIEW_MATRIX, reinterpret_cast<float*>(&cameraMatrix));
 
+	// get the position from this matrix
+	Vect4D camPosVect;
+	cameraMatrix.get(Matrix::MATRIX_ROW_3, &camPosVect);
+
+	// camera position
+	Matrix transCamera;
+	transCamera.setTransMatrix(&camPosVect);
+
 	// iterate throught the list of particles
 	std::list<Particle>::iterator it;
 	for (it = drawBuffer.begin(); it != drawBuffer.end(); ++it)
@@ -227,59 +235,149 @@ void ParticleEmitter::draw()
 		//Temporary matrix
 		Matrix tmp;
 
-		// get the position from this matrix
-		Vect4D camPosVect;
-		cameraMatrix.get(Matrix::MATRIX_ROW_3, &camPosVect);
-
 		// OpenGL goo... don't worrry about this
 		glVertexPointer(3, GL_FLOAT, 0, squareVertices);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
 		glEnableClientState(GL_COLOR_ARRAY);
 
-		// camera position
-		Matrix transCamera;
-		transCamera.setTransMatrix(&camPosVect);
+		const float cosine_rotation = cosf(it->rotation);
+		const float sine_rotation = sinf(it->rotation);
+		
+		// This is transParticle
+		//tmp.m0 = 1.0f;
+		//tmp.m1 = 0.0f;
+		//tmp.m2 = 0.0f;
+		//tmp.m3 = 0.0f;
 
-		// particle position
-		Matrix transParticle;
-		transParticle.setTransMatrix(&it->position);
+		//tmp.m4 = 0.0f;
+		//tmp.m5 = 1.0f;
+		//tmp.m6 = 0.0f;
+		//tmp.m7 = 0.0f;
 
-		// rotation matrix
-		Matrix rotParticle;
-		rotParticle.setRotZMatrix(it->rotation);
+		//tmp.m8 = 0.0f;
+		//tmp.m9 = 0.0f;
+		//tmp.m10 = 1.0f;
+		//tmp.m11 = 0.0f;
 
-		// pivot Point
-		Matrix pivotParticle;
-		Vect4D pivotVect;
-		pivotVect.set(1.0, 0.0, 50.0);
-		pivotVect = pivotVect * 20.0 * it->life;
-		pivotParticle.setTransMatrix(&pivotVect);
+		//tmp.m12 = it->position.x;
+		//tmp.m13 = it->position.y;
+		//tmp.m14 = it->position.z;
+		//tmp.m15 = 1.0f;
 
-		// scale Matrix
-		Matrix scaleMatrix;
-		scaleMatrix.setScaleMatrix(&it->scale);
+		// This is transParticle * rotParticle, call it transrotParticle
+		//tmp.m0 = cosine_rotation;
+		//tmp.m1 = -1.0f * sine_rotation;
+		//tmp.m2 = 0.0f;
+		//tmp.m3 = 0.0f;
+
+		//tmp.m4 = sine_rotation;
+		//tmp.m5 = cosine_rotation;
+		//tmp.m6 = 0.0f;
+		//tmp.m7 = 0.0f;
+
+		//tmp.m8 = 0.0f;
+		//tmp.m9 = 0.0f;
+		//tmp.m10 = 1.0f;
+		//tmp.m11 = 0.0f;
+
+		//tmp.m12 = (it->position.x * cosine_rotation) + (it->position.y * sine_rotation);
+		//tmp.m13 = (it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation);
+		//tmp.m14 = it->position.z;
+		//tmp.m15 = 1.0f;
+
+		// This is transrotParticle * scaleMatrix, call it transrotscaleParticle
+		//tmp.m0 = cosine_rotation * it->scale.x;
+		//tmp.m1 = (-1.0f * sine_rotation) * it->scale.y;
+		//tmp.m2 = 0.0f;
+		//tmp.m3 = 0.0f;
+
+		//tmp.m4 = sine_rotation * it->scale.x;
+		//tmp.m5 = cosine_rotation * it->scale.y;
+		//tmp.m6 = 0.0f;
+		//tmp.m7 = 0.0f;
+
+		//tmp.m8 = 0.0f;
+		//tmp.m9 = 0.0f;
+		//tmp.m10 = it->scale.z;
+		//tmp.m11 = 0.0f;
+
+		//tmp.m12 = ((it->position.x * cosine_rotation) + (it->position.y * sine_rotation)) * it->scale.x;
+		//tmp.m13 = ((it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation)) * it->scale.y;
+		//tmp.m14 = (it->position.z * it->scale.z);
+		//tmp.m15 = 1.0f;
+
+		// This is transrotscaleParticle * scaleMatrix, call it transrotscalescaleParticle
+		//tmp.m0 = (cosine_rotation * it->scale.x) * it->scale.x;
+		//tmp.m1 = ((-1.0f * sine_rotation) * it->scale.y) * it->scale.y;
+		//tmp.m2 = 0.0f;
+		//tmp.m3 = 0.0f;
+
+		//tmp.m4 = (sine_rotation * it->scale.x) * it->scale.x;
+		//tmp.m5 = (cosine_rotation * it->scale.y) * it->scale.y;
+		//tmp.m6 = 0.0f;
+		//tmp.m7 = 0.0f;
+
+		//tmp.m8 = 0.0f;
+		//tmp.m9 = 0.0f;
+		//tmp.m10 = it->scale.z * it->scale.z;
+		//tmp.m11 = 0.0f;
+
+		//tmp.m12 = (((it->position.x * cosine_rotation) + (it->position.y * sine_rotation)) * it->scale.x) * it->scale.x;
+		//tmp.m13 = (((it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation)) * it->scale.y) * it->scale.y;
+		//tmp.m14 = ((it->position.z * it->scale.z)) * it->scale.z;
+		//tmp.m15 = 1.0f;
+
+		// This is transrotscalescaleParticle * transCamera, the final matrix
+		tmp.m0 = (cosine_rotation * it->scale.x) * it->scale.x;
+		tmp.m1 = ((-1.0f * sine_rotation) * it->scale.y) * it->scale.y;
+		tmp.m2 = 0.0f;
+		tmp.m3 = 0.0f;
+		tmp.m4 = (sine_rotation * it->scale.x) * it->scale.x;
+		tmp.m5 = (cosine_rotation * it->scale.y) * it->scale.y;
+		tmp.m6 = 0.0f;
+		tmp.m7 = 0.0f;
+		tmp.m8 = 0.0f;
+		tmp.m9 = 0.0f;
+		tmp.m10 = it->scale.z * it->scale.z;
+		tmp.m11 = 0.0f;
+		tmp.m12 = ((((it->position.x * cosine_rotation) + (it->position.y * sine_rotation)) * it->scale.x) * it->scale.x) * camPosVect.x;
+		tmp.m13 = ((((it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation)) * it->scale.y) * it->scale.y) * camPosVect.y;
+		tmp.m14 = (((it->position.z * it->scale.z)) * it->scale.z) * camPosVect.z;
+		tmp.m15 = 1.0f;
+
+		//// particle position
+		//Matrix transParticle;
+		//transParticle.setTransMatrix(&it->position);
+
+		//// rotation matrix
+		//Matrix rotParticle;
+		//rotParticle.setRotZMatrix(it->rotation);
+
+		//// scale Matrix
+		//Matrix scaleMatrix;
+		//scaleMatrix.setScaleMatrix(&it->scale);
 
 		// total transformation of particle
-		tmp = scaleMatrix * transCamera * transParticle * rotParticle * scaleMatrix;
+		//tmp = transCamera * transParticle * rotParticle * scaleMatrix * scaleMatrix;
 
 		// set the transformation matrix
 		glLoadMatrixf(reinterpret_cast<float*>(&(tmp)));
 
-		// squirrel away matrix for next update
-		tmp.get(Matrix::MATRIX_ROW_0, &it->curr_Row0);
-		tmp.get(Matrix::MATRIX_ROW_1, &it->curr_Row1);
-		tmp.get(Matrix::MATRIX_ROW_2, &it->curr_Row2);
-		tmp.get(Matrix::MATRIX_ROW_3, &it->curr_Row3);
+		//// squirrel away matrix for next update
+		//tmp.get(Matrix::MATRIX_ROW_0, &it->curr_Row0);
+		//tmp.get(Matrix::MATRIX_ROW_1, &it->curr_Row1);
+		//tmp.get(Matrix::MATRIX_ROW_2, &it->curr_Row2);
+		//tmp.get(Matrix::MATRIX_ROW_3, &it->curr_Row3);
 
 		// draw the trangle strip
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-		// difference vector
-		it->diff_Row0 = it->curr_Row0 - it->prev_Row0;
-		it->diff_Row1 = it->curr_Row1 - it->prev_Row1;
-		it->diff_Row2 = it->curr_Row2 - it->prev_Row2;
-		it->diff_Row3 = it->curr_Row3 - it->prev_Row3;
+		//// difference vector
+		//it->diff_Row0 = it->curr_Row0 - it->prev_Row0;
+		//it->diff_Row1 = it->curr_Row1 - it->prev_Row1;
+		//it->diff_Row2 = it->curr_Row2 - it->prev_Row2;
+		//it->diff_Row3 = it->curr_Row3 - it->prev_Row3;
 
 	}
 

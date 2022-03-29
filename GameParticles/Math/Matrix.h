@@ -15,6 +15,7 @@ class Vect4D;
 class Matrix
 {
 public:
+	friend class ParticleEmitter;
 
 	// local enumerations
 	enum MatrixRowEnum
