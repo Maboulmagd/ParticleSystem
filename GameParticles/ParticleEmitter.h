@@ -49,6 +49,9 @@ private:
 	std::list<Particle> drawBuffer;
 	std::list<Particle> particle_list;
 
+	// Added these to avoid declaring them in every Draw() loop
+	float cosine_rotation;
+	float sine_rotation;
 };
 
 #endif
