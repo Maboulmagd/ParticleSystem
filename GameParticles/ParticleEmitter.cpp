@@ -244,56 +244,14 @@ void ParticleEmitter::draw()
 		const float cosine_rotation = cosf(it->rotation);
 		const float sine_rotation = sinf(it->rotation);
 		
-		// This is transParticle
-		//tmp.m0 = 1.0f;
+		// This is scaleMatrix
+		//tmp.m0 = it->scale.x;
 		//tmp.m1 = 0.0f;
 		//tmp.m2 = 0.0f;
 		//tmp.m3 = 0.0f;
 
 		//tmp.m4 = 0.0f;
-		//tmp.m5 = 1.0f;
-		//tmp.m6 = 0.0f;
-		//tmp.m7 = 0.0f;
-
-		//tmp.m8 = 0.0f;
-		//tmp.m9 = 0.0f;
-		//tmp.m10 = 1.0f;
-		//tmp.m11 = 0.0f;
-
-		//tmp.m12 = it->position.x;
-		//tmp.m13 = it->position.y;
-		//tmp.m14 = it->position.z;
-		//tmp.m15 = 1.0f;
-
-		// This is transParticle * rotParticle, call it transrotParticle
-		//tmp.m0 = cosine_rotation;
-		//tmp.m1 = -1.0f * sine_rotation;
-		//tmp.m2 = 0.0f;
-		//tmp.m3 = 0.0f;
-
-		//tmp.m4 = sine_rotation;
-		//tmp.m5 = cosine_rotation;
-		//tmp.m6 = 0.0f;
-		//tmp.m7 = 0.0f;
-
-		//tmp.m8 = 0.0f;
-		//tmp.m9 = 0.0f;
-		//tmp.m10 = 1.0f;
-		//tmp.m11 = 0.0f;
-
-		//tmp.m12 = (it->position.x * cosine_rotation) + (it->position.y * sine_rotation);
-		//tmp.m13 = (it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation);
-		//tmp.m14 = it->position.z;
-		//tmp.m15 = 1.0f;
-
-		// This is transrotParticle * scaleMatrix, call it transrotscaleParticle
-		//tmp.m0 = cosine_rotation * it->scale.x;
-		//tmp.m1 = (-1.0f * sine_rotation) * it->scale.y;
-		//tmp.m2 = 0.0f;
-		//tmp.m3 = 0.0f;
-
-		//tmp.m4 = sine_rotation * it->scale.x;
-		//tmp.m5 = cosine_rotation * it->scale.y;
+		//tmp.m5 = it->scale.y;
 		//tmp.m6 = 0.0f;
 		//tmp.m7 = 0.0f;
 
@@ -302,48 +260,72 @@ void ParticleEmitter::draw()
 		//tmp.m10 = it->scale.z;
 		//tmp.m11 = 0.0f;
 
-		//tmp.m12 = ((it->position.x * cosine_rotation) + (it->position.y * sine_rotation)) * it->scale.x;
-		//tmp.m13 = ((it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation)) * it->scale.y;
-		//tmp.m14 = (it->position.z * it->scale.z);
+		//tmp.m12 = 0.0f;
+		//tmp.m13 = 0.0f;
+		//tmp.m14 = 0.0f;
 		//tmp.m15 = 1.0f;
 
-		// This is transrotscaleParticle * scaleMatrix, call it transrotscalescaleParticle
-		//tmp.m0 = (cosine_rotation * it->scale.x) * it->scale.x;
-		//tmp.m1 = ((-1.0f * sine_rotation) * it->scale.y) * it->scale.y;
+		// This is scaleMatrix * transCamera, call it scaletransCMatrix
+		//tmp.m0 = it->scale.x;
+		//tmp.m1 = 0.0f;
 		//tmp.m2 = 0.0f;
 		//tmp.m3 = 0.0f;
 
-		//tmp.m4 = (sine_rotation * it->scale.x) * it->scale.x;
-		//tmp.m5 = (cosine_rotation * it->scale.y) * it->scale.y;
+		//tmp.m4 = 0.0f;
+		//tmp.m5 = it->scale.y;
 		//tmp.m6 = 0.0f;
 		//tmp.m7 = 0.0f;
 
 		//tmp.m8 = 0.0f;
 		//tmp.m9 = 0.0f;
-		//tmp.m10 = it->scale.z * it->scale.z;
+		//tmp.m10 = it->scale.z;
 		//tmp.m11 = 0.0f;
 
-		//tmp.m12 = (((it->position.x * cosine_rotation) + (it->position.y * sine_rotation)) * it->scale.x) * it->scale.x;
-		//tmp.m13 = (((it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation)) * it->scale.y) * it->scale.y;
-		//tmp.m14 = ((it->position.z * it->scale.z)) * it->scale.z;
+		//tmp.m12 = camPosVect.x;
+		//tmp.m13 = camPosVect.y;
+		//tmp.m14 = camPosVect.z;
 		//tmp.m15 = 1.0f;
 
-		// This is transrotscalescaleParticle * transCamera, the final matrix
-		tmp.m0 = (cosine_rotation * it->scale.x) * it->scale.x;
-		tmp.m1 = ((-1.0f * sine_rotation) * it->scale.y) * it->scale.y;
+		// This is scaletransMatrix * transParticle, call it scaletransCtransPMatrix
+		//tmp.m0 = it->scale.x;
+		//tmp.m1 = 0.0f;
+		//tmp.m2 = 0.0f;
+		//tmp.m3 = 0.0f;
+
+		//tmp.m4 = 0.0f;
+		//tmp.m5 = it->scale.y;
+		//tmp.m6 = 0.0f;
+		//tmp.m7 = 0.0f;
+
+		//tmp.m8 = 0.0f;
+		//tmp.m9 = 0.0f;
+		//tmp.m10 = it->scale.z;
+		//tmp.m11 = 0.0f;
+
+		//tmp.m12 = camPosVect.x + it->position.x;
+		//tmp.m13 = camPosVect.y + it->position.y;
+		//tmp.m14 = camPosVect.z + it->position.z;
+		//tmp.m15 = 1.0f;
+
+		// This is scaletransCtransPMatrix * rotParticle, the final matrix, call it scaletransCtransProtPMatrix
+		tmp.m0 = it->scale.x * cosine_rotation;
+		tmp.m1 = it->scale.x * (-1.0f * sine_rotation);
 		tmp.m2 = 0.0f;
 		tmp.m3 = 0.0f;
-		tmp.m4 = (sine_rotation * it->scale.x) * it->scale.x;
-		tmp.m5 = (cosine_rotation * it->scale.y) * it->scale.y;
+
+		tmp.m4 = it->scale.y * sine_rotation;
+		tmp.m5 = it->scale.y * cosine_rotation;
 		tmp.m6 = 0.0f;
 		tmp.m7 = 0.0f;
+
 		tmp.m8 = 0.0f;
 		tmp.m9 = 0.0f;
-		tmp.m10 = it->scale.z * it->scale.z;
+		tmp.m10 = it->scale.z;
 		tmp.m11 = 0.0f;
-		tmp.m12 = ((((it->position.x * cosine_rotation) + (it->position.y * sine_rotation)) * it->scale.x) * it->scale.x) * camPosVect.x;
-		tmp.m13 = ((((it->position.x * (-1.0f * sine_rotation)) + (it->position.y * cosine_rotation)) * it->scale.y) * it->scale.y) * camPosVect.y;
-		tmp.m14 = (((it->position.z * it->scale.z)) * it->scale.z) * camPosVect.z;
+
+		tmp.m12 = ((camPosVect.x + it->position.x) * cosine_rotation) + ((camPosVect.y + it->position.y) * sine_rotation);
+		tmp.m13 = ((camPosVect.x + it->position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + it->position.y) * cosine_rotation);
+		tmp.m14 = camPosVect.z + it->position.z;
 		tmp.m15 = 1.0f;
 
 		//// particle position
