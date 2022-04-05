@@ -72,6 +72,9 @@ void ParticleEmitter::ReinitializeParticle() {
 	// re-initialize the particle
 	new_particle->life = 0.0f;
 
+	new_particle->state.live.rotation = 0.0f;
+	new_particle->state.live.rotation_velocity = -0.5f;
+
 	new_particle->state.live.position = start_position;
 	new_particle->state.live.velocity = start_velocity;
 	new_particle->state.live.scale = Vect4D(2.0f, 2.0f, 2.0f, 1.0f);
