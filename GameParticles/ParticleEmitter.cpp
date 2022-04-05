@@ -32,16 +32,25 @@ ParticleEmitter::ParticleEmitter()
 	max_life(MAX_LIFE),
 	max_particles(NUM_PARTICLES),
 	spawn_frequency(0.0000001f),
-	last_active_particle(-1),
-	particle_list(NUM_PARTICLES),
 	vel_variance(1.0f, 4.0f, 0.4f),
 	pos_variance(1.0f, 1.0f, 1.0f),
 	scale_variance(2.5f),
-	headParticle(nullptr),
-	bufferCount(0),
 	cosine_rotation(0.0f),
 	sine_rotation(0.0f)
 {
+	particles = new Particle[NUM_PARTICLES];
+	first_available = &particles[0];// The first one is available
+	
+	int i = 0;
+	for (; i < NUM_PARTICLES - 1; ++i) {
+		Particle* const new_particle = &particles[i];
+		new_particle->state.next = &particles[i + 1];
+	}
+
+	// Take care of last particle
+	Particle* const new_particle = &particles[i];
+	new_particle->state.next = nullptr;
+
 	GlobalTimer.Toc();
 
 	last_spawn = GlobalTimer.TimeInSeconds();
@@ -53,53 +62,38 @@ ParticleEmitter::~ParticleEmitter()
 	// do nothing
 }
 
-void ParticleEmitter::SpawnParticle()
-{
-	// create another particle if there are ones free
-	if (last_active_particle < max_particles - 1)
-	{
+void ParticleEmitter::ReinitializeParticle() {
+	assert(first_available != nullptr);
 
-		// create new particle
-		Particle *newParticle = new Particle();
+	// Remove it from the available list
+	Particle* const new_particle = first_available;
+	first_available = new_particle->state.next;
 
-		//Trace::out("Alignment of Vect4D: %d\n", alignof(Vect4D));
-		//Trace::out("Size of Vect4D: %d\n", sizeof(Vect4D));
+	// re-initialize the particle
+	new_particle->life = 0.0f;
 
-		//Trace::out("Alignment of particle: %d\n", alignof(Particle));
-		//Trace::out("Size of particle: %d\n", sizeof(Particle));
+	new_particle->state.live.position = start_position;
+	new_particle->state.live.velocity = start_velocity;
+	new_particle->state.live.scale = Vect4D(2.0f, 2.0f, 2.0f, 1.0f);
 
-		// initialize the particle
-		newParticle->life = 0.0f;
-		newParticle->position = start_position;
-		newParticle->velocity = start_velocity;
-		newParticle->scale = Vect4D(2.0f, 2.0f, 2.0f, 1.0f);
-
-		// apply the variance
-		this->Execute(newParticle->position, newParticle->velocity, newParticle->scale);
-
-		// increment count
-		last_active_particle++;
-
-		// add to list
-		this->addParticleToList(newParticle);
-
-	}
+	// apply the variance
+	Execute(new_particle->state.live.position, new_particle->state.live.velocity, new_particle->state.live.scale);
 }
 
-void ParticleEmitter::update()
-{
+void ParticleEmitter::update() {
 	// get current time
 	GlobalTimer.Toc();
+
 	float current_time = GlobalTimer.TimeInSeconds();
 
 	// spawn particles
 	float time_elapsed = current_time - last_spawn;
 
 	// update
-	while (spawn_frequency < time_elapsed)
-	{
-		// spawn a particle
-		this->SpawnParticle();
+	while (first_available != nullptr) {
+		// re-initialize a particle
+		ReinitializeParticle();
+
 		// adjust time
 		time_elapsed -= spawn_frequency;
 		// last time
@@ -109,108 +103,20 @@ void ParticleEmitter::update()
 	// total elapsed
 	time_elapsed = current_time - last_loop;
 
-	Particle *p = this->headParticle;
-	// walk the particles
+	for (int i = 0; i < NUM_PARTICLES; ++i) {
+		Particle* const curr_particle = &particles[i];
 
-	while (p != 0)
-	{
-		// call every particle and update its position 
-		p->Update(time_elapsed);
+		if (curr_particle->Update(time_elapsed)) {// curr_particle is now dead
 
-		// if it's live is greater that the max_life 
-		// and there is some on the list
-		// remove node
-		if ((p->life > max_life) && (last_active_particle > 0))
-		{
-			// particle to remove
-			Particle *s = p;
+			// Add this particle to the front of the free list
+			curr_particle->state.next = first_available;
+			first_available = &particles[i];
 
-			// need to squirrel it away.
-			p = p->next;
-
-			// remove last node
-			this->removeParticleFromList(s);
-
-			// update the number of particles
-			last_active_particle--;
-		}
-		else
-		{
-			// increment to next point
-			p = p->next;
+			assert(first_available != nullptr);
 		}
 	}
 
-	//move a copy to vector for faster iterations in draw
-	p = this->headParticle;
-	bufferCount = 0;
-
-	// clear the buffer
-	//drawBuffer.clear();
-
-	// walk the pointers, add to list
-	while (p != 0)
-	{
-		// add to buffer
-		drawBuffer.push_back(*p);
-
-		// advance ptr
-		p = p->next;
-
-		// track the current count
-		bufferCount++;
-	}
-
-	// make sure the counts track (asserts go away in release - relax Christos)
-	assert(bufferCount == (last_active_particle + 1));
 	last_loop = current_time;
-}
-
-void ParticleEmitter::addParticleToList(Particle *p)
-{
-	assert(p);
-	if (this->headParticle == 0)
-	{ // first on list
-		this->headParticle = p;
-		p->next = 0;
-		p->prev = 0;
-	}
-	else
-	{ // add to front of list
-		headParticle->prev = p;
-		p->next = headParticle;
-		p->prev = 0;
-		headParticle = p;
-	}
-
-}
-
-void ParticleEmitter::removeParticleFromList(Particle *p)
-{
-	// make sure we are not screwed with a null pointer
-	assert(p);
-
-	if (p->prev == 0 && p->next == 0)
-	{ // only one on the list
-		this->headParticle = 0;
-	}
-	else if (p->prev == 0 && p->next != 0)
-	{ // first on the list
-		p->next->prev = 0;
-		this->headParticle = p->next;
-	}
-	else if (p->prev != 0 && p->next == 0)
-	{ // last on the list 
-		p->prev->next = 0;
-	}
-	else//( p->next != 0  && p->prev !=0 )
-	{ // middle of the list
-		p->prev->next = p->next;
-		p->next->prev = p->prev;
-	}
-
-	// bye bye
-	delete p;
 }
 
 void ParticleEmitter::draw()
@@ -231,9 +137,9 @@ void ParticleEmitter::draw()
 	transCamera.setTransMatrix(&camPosVect);
 
 	// iterate throught the list of particles
-	std::list<Particle>::iterator it;
-	for (it = drawBuffer.begin(); it != drawBuffer.end(); ++it)
-	{
+	for (int i = 0; i < NUM_PARTICLES; ++i) {
+		Particle* const curr_particle = &particles[i];
+
 		//Temporary matrix
 		Matrix tmp;
 
@@ -243,21 +149,21 @@ void ParticleEmitter::draw()
 		glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
 		glEnableClientState(GL_COLOR_ARRAY);
 
-		cosine_rotation = cosf(it->rotation);
-		sine_rotation = sinf(it->rotation);
+		cosine_rotation = cosf(curr_particle->state.live.rotation);
+		sine_rotation = sinf(curr_particle->state.live.rotation);
 		
 		// This is the final transformation matrix, done by hand
-		tmp.m0 = it->scale.x * cosine_rotation;
-		tmp.m1 = it->scale.x * (-1.0f * sine_rotation);
+		tmp.m0 = curr_particle->state.live.scale.x * cosine_rotation;
+		tmp.m1 = curr_particle->state.live.scale.x * (-1.0f * sine_rotation);
 
-		tmp.m4 = it->scale.y * sine_rotation;
-		tmp.m5 = it->scale.y * cosine_rotation;
+		tmp.m4 = curr_particle->state.live.scale.y * sine_rotation;
+		tmp.m5 = curr_particle->state.live.scale.y * cosine_rotation;
 
-		tmp.m10 = it->scale.z;
+		tmp.m10 = curr_particle->state.live.scale.z;
 
-		tmp.m12 = ((camPosVect.x + it->position.x) * cosine_rotation) + ((camPosVect.y + it->position.y) * sine_rotation);
-		tmp.m13 = ((camPosVect.x + it->position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + it->position.y) * cosine_rotation);
-		tmp.m14 = camPosVect.z + it->position.z;
+		tmp.m12 = ((camPosVect.x + curr_particle->state.live.position.x) * cosine_rotation) + ((camPosVect.y + curr_particle->state.live.position.y) * sine_rotation);
+		tmp.m13 = ((camPosVect.x + curr_particle->state.live.position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation);
+		tmp.m14 = camPosVect.z + curr_particle->state.live.position.z;
 		tmp.m15 = 1.0f;
 
 		// set the transformation matrix
@@ -266,15 +172,6 @@ void ParticleEmitter::draw()
 		// draw the trangle strip
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
-
-	// delete the buffer
-	for (size_t i = 0; i < drawBuffer.size(); i++)
-	{
-		drawBuffer.pop_back();
-	}
-
-	// done with buffer, clear it.
-	drawBuffer.clear();
 }
 
 void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
@@ -363,17 +260,8 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 	sc = sc * var;
 }
 
-
-void ParticleEmitter::GoodBye()
-{
-	Particle *pTmp = this->headParticle;
-	Particle *pDeadMan = nullptr;
-	while (pTmp)
-	{
-		pDeadMan = pTmp;
-		pTmp = pTmp->next;
-		delete pDeadMan;
-	}
+void ParticleEmitter::GoodBye() {
+	delete[] particles;
 }
 
 // End of file
