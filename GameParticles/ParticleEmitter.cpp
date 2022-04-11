@@ -51,6 +51,21 @@ ParticleEmitter::ParticleEmitter()
 	Particle* const new_particle = &particles[i];
 	new_particle->state.next = nullptr;
 
+	//Trace::out("sizeof(Vect4D): %d\n", sizeof(Vect4D));
+	//Trace::out("alignof(Vect4D): %d\n", alignof(Vect4D));
+
+	//Trace::out("sizeof(Particle*): %d\n", sizeof(Particle));
+	//Trace::out("alignof(Particle): %d\n", alignof(Particle));
+
+	//Particle p;
+
+	//Trace::out("sizeof(p.state): %d\n", sizeof(p.state));
+	//Trace::out("sizeof(p.state.live): %d\n", sizeof(p.state.live));
+
+	//Trace::out("sizeof(p): %d\n", sizeof(p));
+
+	//Trace::out("default compiler alignment: %d\n", __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+
 	GlobalTimer.Toc();
 
 	last_spawn = GlobalTimer.TimeInSeconds();
@@ -106,17 +121,18 @@ void ParticleEmitter::update() {
 	// total elapsed
 	time_elapsed = current_time - last_loop;
 
+	Particle* curr_particle = &particles[0];
 	for (int i = 0; i < NUM_PARTICLES; ++i) {
-		Particle* const curr_particle = &particles[i];
-
 		if (curr_particle->Update(time_elapsed)) {// curr_particle is now dead
 
 			// Add this particle to the front of the free list
 			curr_particle->state.next = first_available;
-			first_available = &particles[i];
+			first_available = curr_particle;
 
 			assert(first_available != nullptr);
 		}
+
+		curr_particle++;
 	}
 
 	last_loop = current_time;
@@ -140,9 +156,8 @@ void ParticleEmitter::draw()
 	transCamera.setTransMatrix(&camPosVect);
 
 	// iterate throught the list of particles
+	Particle* curr_particle = &particles[0];
 	for (int i = 0; i < NUM_PARTICLES; ++i) {
-		Particle* const curr_particle = &particles[i];
-
 		//Temporary matrix
 		Matrix tmp;
 
@@ -165,7 +180,8 @@ void ParticleEmitter::draw()
 		tmp.m10 = curr_particle->state.live.scale.z;
 
 		tmp.m12 = ((camPosVect.x + curr_particle->state.live.position.x) * cosine_rotation) + ((camPosVect.y + curr_particle->state.live.position.y) * sine_rotation);
-		tmp.m13 = ((camPosVect.x + curr_particle->state.live.position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation);
+		//tmp.m13 = ((camPosVect.x + curr_particle->state.live.position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation);
+		tmp.m13 = ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation) - ((camPosVect.x + curr_particle->state.live.position.x) * sine_rotation);// More efficient
 		tmp.m14 = camPosVect.z + curr_particle->state.live.position.z;
 		tmp.m15 = 1.0f;
 
@@ -174,6 +190,8 @@ void ParticleEmitter::draw()
 
 		// draw the trangle strip
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		curr_particle++;
 	}
 }
 
@@ -181,86 +199,74 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 {
 	// Add some randomness...
 
-	// Ses it's ugly - I didn't write this so don't bitch at me   
+	// See it's ugly - I didn't write this so don't bitch at me   
 	// Sometimes code like this is inside real commerical code   
 	// ( so now you know how it feels )   
 
 	// x - variance
-	float var = static_cast<float>(rand() % 1000) * 0.001f; // Var           
-	float sign = static_cast<float>(rand() % 2);  // Sign          
-	float *t_pos = reinterpret_cast<float*>(&pos);
-	float *t_var = &pos_variance[x];
-	if (sign == 0)
-	{
-		var *= -1.0;
+	float var = static_cast<float>(rand() % 1000) * 0.001f;// Var 
+	float sign = static_cast<float>(rand() % 2);// Sign 
+	if (sign == 0.0f) {
+		var *= -1.0f;
 	}
-	*t_pos += *t_var * var;
-
+	else {
+		pos.x += pos_variance[x] * var;
+	}
+	
 	// y - variance
 	var = static_cast<float>(rand() % 1000) * 0.001f;
 	sign = static_cast<float>(rand() % 2);
-	t_pos++;
-	t_var++;
-	if (sign == 0.0f)
-	{
+	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	*t_pos += *t_var * var;
+	else {
+		pos.y += pos_variance[y] * var;
+	}
 
 	// z - variance
 	var = static_cast<float>(rand() % 1000) * 0.001f;
 	sign = static_cast<float>(rand() % 2);
-	t_pos++;
-	t_var++;
-	if (sign == 0.0f)
-	{
+	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	*t_pos += *t_var * var;
+	else {
+		pos.z += pos_variance[z] * var;
+	}
 
-	var = static_cast<float>(rand() % 1000) * 0.001f;
-	sign = static_cast<float>(rand() % 2);
 
 	// x  - add velocity
-	t_pos = &vel[x];
-	t_var = &vel_variance[x];
-	if (sign == 0.0f)
-	{
+	var = static_cast<float>(rand() % 1000) * 0.001f;
+	sign = static_cast<float>(rand() % 2);
+	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	*t_pos += *t_var * var;
+	vel[x] += vel_variance[x] * var;
 
 	// y - add velocity
 	var = static_cast<float>(rand() % 1000) * 0.001f;
 	sign = static_cast<float>(rand() % 2);
-	t_pos++;
-	t_var++;
-	if (sign == 0.0f)
-	{
+	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	*t_pos += *t_var * var;
+	vel[y] += vel_variance[y] * var;
 
 	// z - add velocity
 	var = static_cast<float>(rand() % 1000) * 0.001f;
 	sign = static_cast<float>(rand() % 2);
-	t_pos++;
-	t_var++;
-	if (sign == 0.0f)
-	{
+	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	*t_pos += *t_var * var;
+	vel[z] += vel_variance[z] * var;
 
 	// correct the sign
 	var = 2.0f * static_cast<float>(rand() % 1000) * 0.001f;
-	sign = static_cast<float>(rand() % 2);  
+	sign = static_cast<float>(rand() % 2);
 
-	if (sign == 0.0f)
-	{
+	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	sc = sc * var;
+
+	sc *= var;
 }
 
 void ParticleEmitter::GoodBye() {

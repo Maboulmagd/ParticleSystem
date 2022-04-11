@@ -58,7 +58,7 @@ LARGE_INTEGER Timer::privGetTimer() noexcept
 void Timer::Tic() noexcept
 {
 	// Forces a Fence... 
-	printf("tic()\n");
+	//printf("tic()\n");
 
 	this->ticTime = this->privGetTimer();
 }
@@ -70,7 +70,7 @@ void Timer::Toc() noexcept
 	this->deltaTime.QuadPart = this->tocTime.QuadPart - this->ticTime.QuadPart;
 
 	// Forces a Fence... 
-	printf("toc()\n");
+	//printf("toc()\n");
 }
 
 void Timer::Reset() noexcept

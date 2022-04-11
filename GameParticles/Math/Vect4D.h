@@ -13,7 +13,7 @@
 class Matrix;
 
 // class
-class Vect4D final
+class __declspec(align(16)) Vect4D final
 {
 public:
 	friend class ParticleEmitter;
@@ -29,6 +29,8 @@ public:
 	Vect4D operator + (Vect4D t);
 	Vect4D operator - (Vect4D t);
 	Vect4D operator * (float scale);
+
+	void operator *= (const float scale);
 
 	void Cross(Vect4D &vin, Vect4D &vout);
 

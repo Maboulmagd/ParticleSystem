@@ -74,6 +74,12 @@ Vect4D Vect4D::operator *(float scale)
 	return tmp;
 }
 
+void Vect4D::operator*=(const float scale) {
+	x *= scale;
+	y *= scale;
+	z *= scale;
+}
+
 float& Vect4D::operator[](VECT_ENUM e)
 {
 	switch (e)

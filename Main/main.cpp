@@ -40,18 +40,8 @@ int main()
 	// Get the inverse Camera Matrix:-------------------
 
 		// initialize the camera matrix
-		Matrix CameraMatrix;
-		CameraMatrix.setIdentMatrix();
-
-		// setup the translation matrix
-		Matrix TransMatrix;
-		Vect4D Trans(0.0f, 10.0f, 15.0f);
-		TransMatrix.setTransMatrix(&Trans);
-
-		// multiply them together
-		Matrix tmp;
-		tmp = CameraMatrix * TransMatrix;
-
+		Matrix camera_matrix;
+		
 		// counter for printing
 		int i = 0;
 
@@ -70,20 +60,10 @@ int main()
 		UpdateTimer.Tic();
 
 			// initialize the camera matrix
-			Matrix cameraMatrix;
-			cameraMatrix.setIdentMatrix();
-
-			// setup the translation matrix
-			Matrix transMatrix;
-			Vect4D trans(0.0f, 10.0f, 15.0f);
-			transMatrix.setTransMatrix(&trans);
-
-			// multiply them together
-			tmp = cameraMatrix * transMatrix;
+			camera_matrix.setIdentMatrix();
 
 			// get the inverse matrix
-			Matrix inverseCameraMatrix;
-			tmp.Inverse(inverseCameraMatrix);
+			camera_matrix.SetInverseCameraMatrix();
 
 			// start draw... end draw (the draw updates)
 			OpenGLDevice::StartDraw();
@@ -91,7 +71,7 @@ int main()
 			// set matrix to Model View
 			// push the inverseCameraMarix to stack
 			glMatrixMode(GL_MODELVIEW);
-			glLoadMatrixf(reinterpret_cast<float*>(&inverseCameraMatrix));
+			glLoadMatrixf(reinterpret_cast<float*>(&camera_matrix));
 			glPushMatrix(); // push the camera matrix
 
 			// update the emitter

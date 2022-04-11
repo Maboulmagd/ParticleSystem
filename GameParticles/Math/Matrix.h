@@ -38,16 +38,15 @@ public:
 	void setScaleMatrix(Vect4D *s);
 	void setRotZMatrix(float Z_Radians);
 
+	void SetInverseCameraMatrix();// Used just for inversing camera matrix in main.cpp
+
 	float &operator[](INDEX_ENUM e);
 
 	Matrix operator*(Matrix &t);
 
 	float Determinant();
 
-	Matrix GetAdjugate();
 	Matrix& Matrix::operator/=(float t);
-
-	void Matrix::Inverse(Matrix &out);
 
 private:
 
