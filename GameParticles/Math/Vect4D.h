@@ -31,6 +31,7 @@ public:
 	Vect4D operator * (float scale);
 
 	void operator *= (const float scale);
+	void operator += (const Vect4D& t);
 
 	void Cross(Vect4D &vin, Vect4D &vout);
 

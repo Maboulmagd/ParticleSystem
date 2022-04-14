@@ -12,41 +12,28 @@
 class Vect4D;
 
 // class
-class Matrix
-{
+class __declspec(align(16)) Matrix final {
 public:
 	friend class ParticleEmitter;
 
 	// local enumerations
-	enum MatrixRowEnum
-	{
+	enum MatrixRowEnum {
 		MATRIX_ROW_0,
 		MATRIX_ROW_1,
 		MATRIX_ROW_2,
 		MATRIX_ROW_3
 	};
 
-	Matrix();
-	Matrix(Matrix& t);
+	explicit Matrix();
+	explicit Matrix(const Matrix& t);
 	~Matrix();
 
-	void set(MatrixRowEnum row, Vect4D *t);
-	void get(MatrixRowEnum row, Vect4D *vOut);
+	void get(const MatrixRowEnum row, Vect4D* const vOut);
 
 	void setIdentMatrix();
-	void setTransMatrix(Vect4D *t);
-	void setScaleMatrix(Vect4D *s);
-	void setRotZMatrix(float Z_Radians);
+	void setTransMatrix(const Vect4D* const t);
 
 	void SetInverseCameraMatrix();// Used just for inversing camera matrix in main.cpp
-
-	float &operator[](INDEX_ENUM e);
-
-	Matrix operator*(Matrix &t);
-
-	float Determinant();
-
-	Matrix& Matrix::operator/=(float t);
 
 private:
 

@@ -26,18 +26,18 @@ static const float squareVertices[] =
 	 0.015f,   0.015f, 0.0f, // Size of Triangle  
 };
 
+// Added these here as static variables, so as to avoid declaring them in every Draw() loop
+static float cosine_rotation{ 0.0f };
+static float sine_rotation{ 0.0f };
+
 ParticleEmitter::ParticleEmitter()
 	: start_position(0.0f, 0.0f, 0.0f),
 	start_velocity(0.0f, 1.0f, 0.0f),
-	max_life(MAX_LIFE),
-	max_particles(NUM_PARTICLES),
-	spawn_frequency(0.0000001f),
 	vel_variance(1.0f, 4.0f, 0.4f),
-	pos_variance(1.0f, 1.0f, 1.0f),
-	scale_variance(2.5f),
-	cosine_rotation(0.0f),
-	sine_rotation(0.0f)
+	pos_variance(1.0f, 1.0f, 1.0f)
 {
+	GlobalTimer.Toc();
+
 	particles = new Particle[NUM_PARTICLES];
 	first_available = &particles[0];// The first one is available
 	
@@ -54,7 +54,7 @@ ParticleEmitter::ParticleEmitter()
 	//Trace::out("sizeof(Vect4D): %d\n", sizeof(Vect4D));
 	//Trace::out("alignof(Vect4D): %d\n", alignof(Vect4D));
 
-	//Trace::out("sizeof(Particle*): %d\n", sizeof(Particle));
+	//Trace::out("sizeof(Particle): %d\n", sizeof(Particle));
 	//Trace::out("alignof(Particle): %d\n", alignof(Particle));
 
 	//Particle p;
@@ -65,8 +65,6 @@ ParticleEmitter::ParticleEmitter()
 	//Trace::out("sizeof(p): %d\n", sizeof(p));
 
 	//Trace::out("default compiler alignment: %d\n", __STDCPP_DEFAULT_NEW_ALIGNMENT__);
-
-	GlobalTimer.Toc();
 
 	last_spawn = GlobalTimer.TimeInSeconds();
 	last_loop = GlobalTimer.TimeInSeconds();
@@ -94,6 +92,8 @@ void ParticleEmitter::ReinitializeParticle() {
 	new_particle->state.live.velocity = start_velocity;
 	new_particle->state.live.scale = Vect4D(2.0f, 2.0f, 2.0f, 1.0f);
 
+	//new_particle->state.next = nullptr;
+
 	// apply the variance
 	Execute(new_particle->state.live.position, new_particle->state.live.velocity, new_particle->state.live.scale);
 }
@@ -101,8 +101,7 @@ void ParticleEmitter::ReinitializeParticle() {
 void ParticleEmitter::update() {
 	// get current time
 	GlobalTimer.Toc();
-
-	float current_time = GlobalTimer.TimeInSeconds();
+	const float current_time = GlobalTimer.TimeInSeconds();
 
 	// spawn particles
 	float time_elapsed = current_time - last_spawn;
@@ -113,7 +112,7 @@ void ParticleEmitter::update() {
 		ReinitializeParticle();
 
 		// adjust time
-		time_elapsed -= spawn_frequency;
+		time_elapsed -= 0.0000001f;// spawn_frequency
 		// last time
 		last_spawn = current_time;
 	}
@@ -158,38 +157,40 @@ void ParticleEmitter::draw()
 	// iterate throught the list of particles
 	Particle* curr_particle = &particles[0];
 	for (int i = 0; i < NUM_PARTICLES; ++i) {
-		//Temporary matrix
-		Matrix tmp;
+		if (curr_particle->IsAlive()) {// NOTE: I was missing THIS check! I was drawing EVERY single particle, EVEN DEAD PARTICLES!
+			//Temporary matrix
+			Matrix tmp;
 
-		// OpenGL goo... don't worrry about this
-		glVertexPointer(3, GL_FLOAT, 0, squareVertices);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
-		glEnableClientState(GL_COLOR_ARRAY);
+			// OpenGL goo... don't worrry about this
+			glVertexPointer(3, GL_FLOAT, 0, squareVertices);
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
+			glEnableClientState(GL_COLOR_ARRAY);
 
-		cosine_rotation = cosf(curr_particle->state.live.rotation);
-		sine_rotation = sinf(curr_particle->state.live.rotation);
-		
-		// This is the final transformation matrix, done by hand
-		tmp.m0 = curr_particle->state.live.scale.x * cosine_rotation;
-		tmp.m1 = curr_particle->state.live.scale.x * (-1.0f * sine_rotation);
+			cosine_rotation = cosf(curr_particle->state.live.rotation);
+			sine_rotation = sinf(curr_particle->state.live.rotation);
 
-		tmp.m4 = curr_particle->state.live.scale.y * sine_rotation;
-		tmp.m5 = curr_particle->state.live.scale.y * cosine_rotation;
+			// This is the final transformation matrix, done by hand
+			tmp.m0 = curr_particle->state.live.scale.x * cosine_rotation;
+			tmp.m1 = curr_particle->state.live.scale.x * (-1.0f * sine_rotation);
 
-		tmp.m10 = curr_particle->state.live.scale.z;
+			tmp.m4 = curr_particle->state.live.scale.y * sine_rotation;
+			tmp.m5 = curr_particle->state.live.scale.y * cosine_rotation;
 
-		tmp.m12 = ((camPosVect.x + curr_particle->state.live.position.x) * cosine_rotation) + ((camPosVect.y + curr_particle->state.live.position.y) * sine_rotation);
-		//tmp.m13 = ((camPosVect.x + curr_particle->state.live.position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation);
-		tmp.m13 = ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation) - ((camPosVect.x + curr_particle->state.live.position.x) * sine_rotation);// More efficient
-		tmp.m14 = camPosVect.z + curr_particle->state.live.position.z;
-		tmp.m15 = 1.0f;
+			tmp.m10 = curr_particle->state.live.scale.z;
 
-		// set the transformation matrix
-		glLoadMatrixf(reinterpret_cast<float*>(&(tmp)));
+			tmp.m12 = ((camPosVect.x + curr_particle->state.live.position.x) * cosine_rotation) + ((camPosVect.y + curr_particle->state.live.position.y) * sine_rotation);
+			//tmp.m13 = ((camPosVect.x + curr_particle->state.live.position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation);
+			tmp.m13 = ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation) - ((camPosVect.x + curr_particle->state.live.position.x) * sine_rotation);// More efficient
+			tmp.m14 = camPosVect.z + curr_particle->state.live.position.z;
+			tmp.m15 = 1.0f;
 
-		// draw the trangle strip
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			// set the transformation matrix
+			glLoadMatrixf(reinterpret_cast<float*>(&(tmp)));
+
+			// draw the trangle strip
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		}
 
 		curr_particle++;
 	}

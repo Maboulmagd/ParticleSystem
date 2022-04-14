@@ -15,32 +15,21 @@ public:
     explicit Particle();
 	~Particle();
 
-	bool IsAlive() const;
+	void* operator new(size_t size);
+	void* operator new[](size_t size);
 
+	void operator delete(void* p);
+	void operator delete[](void* p);
+
+	bool IsAlive() const;
 	const bool Update(const float& time_elapsed);
 
 private:
-	union state final {
-		struct {
-			// NOTE/TODO: Not sure why when I take out the 12 useless Vect4D's (192 bytes reduction) the animation is wrong for a split second right at the very start!
-			Vect4D	prev_Row0;
-			Vect4D	prev_Row1;
-			Vect4D  prev_Row2;
-			Vect4D  prev_Row3;
-
+	union __declspec(align(16)) state final {
+		struct __declspec(align(16)) final {
 			Vect4D	position;
 			Vect4D	velocity;
 			Vect4D	scale;
-
-			Vect4D  diff_Row0;
-			Vect4D  diff_Row1;
-			Vect4D  diff_Row2;
-			Vect4D  diff_Row3;
-			
-			Vect4D	curr_Row0;
-			Vect4D	curr_Row1;
-			Vect4D  curr_Row2;
-			Vect4D  curr_Row3;
 
 			float	rotation;
 			float	rotation_velocity;

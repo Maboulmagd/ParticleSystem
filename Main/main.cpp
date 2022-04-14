@@ -37,6 +37,9 @@ int main()
 
 		ParticleEmitter emitter;
 
+		//Trace::out("sizeof(ParticleEmitter): %d\n", sizeof(ParticleEmitter));
+		//Trace::out("alignof(ParticleEmitter): %d\n", alignof(ParticleEmitter));
+
 	// Get the inverse Camera Matrix:-------------------
 
 		// initialize the camera matrix

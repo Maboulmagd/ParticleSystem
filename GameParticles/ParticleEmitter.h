@@ -12,10 +12,9 @@
 #include <list>
 #include <Settings.h>
 
-class ParticleEmitter
-{
+class __declspec(align(16)) ParticleEmitter final {
 public:
-	ParticleEmitter();
+	explicit ParticleEmitter();
 	~ParticleEmitter();
 
 	void ReinitializeParticle();
@@ -27,26 +26,18 @@ public:
 	void GoodBye();
 
 private:
-	Vect4D	start_position;
-	Vect4D	start_velocity;
-
-	float	max_life;
-	int		max_particles;
-	float	spawn_frequency;
-	float	last_spawn;
-	float	last_loop;
+	Particle* first_available;// Free list
+	Particle* particles;
 
 	// added for speed efficiency
 	Vect4D	vel_variance;
 	Vect4D	pos_variance;
-	float	scale_variance;
 
-	Particle* first_available;// Free list
-	Particle* particles;
+	float	last_spawn;
+	float	last_loop;
 
-	// Added these to avoid declaring them in every Draw() loop
-	float cosine_rotation;
-	float sine_rotation;
+	Vect4D	start_position;
+	Vect4D	start_velocity;
 };
 
 #endif
