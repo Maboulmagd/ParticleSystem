@@ -30,12 +30,7 @@ static const float squareVertices[] =
 static float cosine_rotation{ 0.0f };
 static float sine_rotation{ 0.0f };
 
-ParticleEmitter::ParticleEmitter()
-	: start_position(0.0f, 0.0f, 0.0f),
-	start_velocity(0.0f, 1.0f, 0.0f),
-	vel_variance(1.0f, 4.0f, 0.4f),
-	pos_variance(1.0f, 1.0f, 1.0f)
-{
+ParticleEmitter::ParticleEmitter() {
 	GlobalTimer.Toc();
 
 	particles = new Particle[NUM_PARTICLES];
@@ -53,10 +48,7 @@ ParticleEmitter::ParticleEmitter()
 
 	//Trace::out("sizeof(Vect4D): %d\n", sizeof(Vect4D));
 	//Trace::out("alignof(Vect4D): %d\n", alignof(Vect4D));
-
-	//Trace::out("sizeof(Particle): %d\n", sizeof(Particle));
-	//Trace::out("alignof(Particle): %d\n", alignof(Particle));
-
+	
 	//Particle p;
 
 	//Trace::out("sizeof(p.state): %d\n", sizeof(p.state));
@@ -85,11 +77,11 @@ void ParticleEmitter::ReinitializeParticle() {
 	// re-initialize the particle
 	new_particle->life = 0.0f;
 
-	new_particle->state.live.rotation = 0.0f;
-	new_particle->state.live.rotation_velocity = -0.5f;
+	new_particle->rotation = 0.0f;
+	new_particle->rotation_velocity = -0.5f;
 
-	new_particle->state.live.position = start_position;
-	new_particle->state.live.velocity = start_velocity;
+	new_particle->state.live.position = Vect4D(1.0f, 1.0f, 1.0f);
+	new_particle->state.live.velocity = Vect4D(0.0f, 1.0f, 0.0f);
 	new_particle->state.live.scale = Vect4D(2.0f, 2.0f, 2.0f, 1.0f);
 
 	//new_particle->state.next = nullptr;
@@ -167,8 +159,8 @@ void ParticleEmitter::draw()
 			glColorPointer(4, GL_UNSIGNED_BYTE, 0, squareColors);
 			glEnableClientState(GL_COLOR_ARRAY);
 
-			cosine_rotation = cosf(curr_particle->state.live.rotation);
-			sine_rotation = sinf(curr_particle->state.live.rotation);
+			cosine_rotation = cosf(curr_particle->rotation);
+			sine_rotation = sinf(curr_particle->rotation);
 
 			// This is the final transformation matrix, done by hand
 			tmp.m0 = curr_particle->state.live.scale.x * cosine_rotation;
@@ -180,8 +172,7 @@ void ParticleEmitter::draw()
 			tmp.m10 = curr_particle->state.live.scale.z;
 
 			tmp.m12 = ((camPosVect.x + curr_particle->state.live.position.x) * cosine_rotation) + ((camPosVect.y + curr_particle->state.live.position.y) * sine_rotation);
-			//tmp.m13 = ((camPosVect.x + curr_particle->state.live.position.x) * (-1.0f * sine_rotation)) + ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation);
-			tmp.m13 = ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation) - ((camPosVect.x + curr_particle->state.live.position.x) * sine_rotation);// More efficient
+			tmp.m13 = ((camPosVect.y + curr_particle->state.live.position.y) * cosine_rotation) - ((camPosVect.x + curr_particle->state.live.position.x) * sine_rotation);
 			tmp.m14 = camPosVect.z + curr_particle->state.live.position.z;
 			tmp.m15 = 1.0f;
 
@@ -211,7 +202,7 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 		var *= -1.0f;
 	}
 	else {
-		pos.x += pos_variance[x] * var;
+		pos.x += var;
 	}
 	
 	// y - variance
@@ -221,7 +212,7 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 		var *= -1.0f;
 	}
 	else {
-		pos.y += pos_variance[y] * var;
+		pos.y += var;
 	}
 
 	// z - variance
@@ -231,7 +222,7 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 		var *= -1.0f;
 	}
 	else {
-		pos.z += pos_variance[z] * var;
+		pos.z += var;
 	}
 
 
@@ -241,7 +232,7 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	vel[x] += vel_variance[x] * var;
+	vel[x] += var;
 
 	// y - add velocity
 	var = static_cast<float>(rand() % 1000) * 0.001f;
@@ -249,7 +240,7 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	vel[y] += vel_variance[y] * var;
+	vel[y] += 4.0f * var;
 
 	// z - add velocity
 	var = static_cast<float>(rand() % 1000) * 0.001f;
@@ -257,7 +248,7 @@ void ParticleEmitter::Execute(Vect4D& pos, Vect4D& vel, Vect4D& sc)
 	if (sign == 0.0f) {
 		var *= -1.0f;
 	}
-	vel[z] += vel_variance[z] * var;
+	vel[z] += 0.4f * var;
 
 	// correct the sign
 	var = 2.0f * static_cast<float>(rand() % 1000) * 0.001f;

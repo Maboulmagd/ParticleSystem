@@ -8,13 +8,13 @@
 
 // includes
 #include "Enum.h"
+#include "Align16.h"
 
 // Foward Declarations
 class Matrix;
 
 // class
-class __declspec(align(16)) Vect4D final
-{
+class __declspec(align(16)) Vect4D final : public Align16 {
 public:
 	friend class ParticleEmitter;
 	friend class Matrix;
@@ -38,10 +38,19 @@ public:
 	float &operator[](VECT_ENUM e);
 
 private:
-	float x;
-	float y;
-	float z;
-	float w;
+
+	// anonymous union
+	union {
+		__m128 row;
+
+		// anonymous struct
+		struct {
+			float x;
+			float y;
+			float z;
+			float w;
+		};
+	};
 };
 
 #endif  

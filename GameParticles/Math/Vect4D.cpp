@@ -7,10 +7,10 @@
 
 #include "Vect4D.h"
 
-Vect4D::Vect4D() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {
+Vect4D::Vect4D() : /*x(0.0f), y(0.0f), z(0.0f), w(1.0f) */ row{ _mm_set_ps(0.0f, 0.0f, 0.0f, 1.0f) } {
 }
 
-Vect4D::Vect4D(float tx, float ty, float tz, float tw) : x(tx), y(ty), z(tz), w(tw) {
+Vect4D::Vect4D(float tx, float ty, float tz, float tw) : /* x(tx), y(ty), z(tz), w(tw)*/ row{ _mm_set_ps(tx, ty, tz, tw) } {
 }
 
 Vect4D::~Vect4D() {
@@ -18,14 +18,19 @@ Vect4D::~Vect4D() {
 }
 
 void Vect4D::norm(Vect4D& out) {
-	float mag = sqrtf(x * x + y * y + z * z);
+	//const float mag = sqrtf(x * x + y * y + z * z);
+	const __m128 squaring = _mm_mul_ps(row, row);
+	const __m128 root = _mm_sqrt_ps(squaring);
 
-	if (0.0f < mag) {
-		out.x = x / mag;
-		out.y = y / mag;
-		out.z = z / mag;
-		out.w = 1.0f;
-	}
+	//if (0.0f < mag) {
+	//	out.x = x / mag;
+	//	out.y = y / mag;
+	//	out.z = z / mag;
+	//	out.w = 1.0f;
+	//}
+	const __m128 comparison = _mm_cmplt_ps(_mm_setzero_ps(), root);
+
+
 }
 
 Vect4D Vect4D::operator + (Vect4D t) {

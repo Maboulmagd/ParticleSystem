@@ -105,6 +105,9 @@
     <ClInclude Include="..\Framework\UnitTest.h">
       <Filter>_Framework</Filter>
     </ClInclude>
+    <ClInclude Include="Align16.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Framework\__DO NOT MODIFY__">

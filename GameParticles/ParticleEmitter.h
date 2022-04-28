@@ -12,7 +12,7 @@
 #include <list>
 #include <Settings.h>
 
-class __declspec(align(16)) ParticleEmitter final {
+class __declspec(align(16)) ParticleEmitter final : public Align16 {
 public:
 	explicit ParticleEmitter();
 	~ParticleEmitter();
@@ -29,15 +29,8 @@ private:
 	Particle* first_available;// Free list
 	Particle* particles;
 
-	// added for speed efficiency
-	Vect4D	vel_variance;
-	Vect4D	pos_variance;
-
 	float	last_spawn;
 	float	last_loop;
-
-	Vect4D	start_position;
-	Vect4D	start_velocity;
 };
 
 #endif

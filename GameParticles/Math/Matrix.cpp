@@ -9,73 +9,55 @@
 #include "Matrix.h"
 
 Matrix::Matrix() { // constructor for the matrix
-	m0 = 0.0f;
-	m1 = 0.0f;
-	m2 = 0.0f;
-	m3 = 0.0f;
+	//m0 = 0.0f;
+	//m1 = 0.0f;
+	//m2 = 0.0f;
+	//m3 = 0.0f;
+	row_0 = _mm_setzero_ps();
 
-	m4 = 0.0f;
-	m5 = 0.0f;
-	m6 = 0.0f;
-	m7 = 0.0f;
+	//m4 = 0.0f;
+	//m5 = 0.0f;
+	//m6 = 0.0f;
+	//m7 = 0.0f;
+	row_1 = _mm_setzero_ps();
 
-	m8 = 0.0f;
-	m9 = 0.0f;
-	m10 = 0.0f;
-	m11 = 0.0f;
+	//m8 = 0.0f;
+	//m9 = 0.0f;
+	//m10 = 0.0f;
+	//m11 = 0.0f;
+	row_2 = _mm_setzero_ps();
 
-	m12 = 0.0f;
-	m13 = 0.0f;
-	m14 = 0.0f;
-	m15 = 0.0f;
-}
-
-Matrix::Matrix(const Matrix& t) { // copy constructor
-	m0 = t.m0;
-	m1 = t.m1;
-	m2 = t.m2;
-	m3 = t.m3;
-
-	m4 = t.m4;
-	m5 = t.m5;
-	m6 = t.m6;
-	m7 = t.m7;
-
-	m8 = t.m8;
-	m9 = t.m9;
-	m10 = t.m10;
-	m11 = t.m11;
-
-	m12 = t.m12;
-	m13 = t.m13;
-	m14 = t.m14;
-	m15 = t.m15;
-}
-
-Matrix::~Matrix() {
-	// nothing to delete
+	//m12 = 0.0f;
+	//m13 = 0.0f;
+	//m14 = 0.0f;
+	//m15 = 0.0f;
+	row_3 = _mm_setzero_ps();
 }
 
 void Matrix::setIdentMatrix() { // initialize to the identity matrix
-	m0 = 1.0f;
-	m1 = 0.0f;
-	m2 = 0.0f;
-	m3 = 0.0f;
+	//m0 = 1.0f;
+	//m1 = 0.0f;
+	//m2 = 0.0f;
+	//m3 = 0.0f;
+	row_0 = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
 
-	m4 = 0.0f;
-	m5 = 1.0f;
-	m6 = 0.0f;
-	m7 = 0.0f;
+	//m4 = 0.0f;
+	//m5 = 1.0f;
+	//m6 = 0.0f;
+	//m7 = 0.0f;
+	row_1 = _mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f);
 
-	m8 = 0.0f;
-	m9 = 0.0f;
-	m10 = 1.0f;
-	m11 = 0.0f;
+	//m8 = 0.0f;
+	//m9 = 0.0f;
+	//m10 = 1.0f;
+	//m11 = 0.0f;
+	row_2 = _mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f);
 
-	m12 = 0.0f;
-	m13 = 0.0f;
-	m14 = 0.0f;
-	m15 = 1.0f;
+	//m12 = 0.0f;
+	//m13 = 0.0f;
+	//m14 = 0.0f;
+	//m15 = 1.0f;
+	row_3 = _mm_set_ps(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void Matrix::get(const MatrixRowEnum row, Vect4D* const t) { // get a row of the matrix

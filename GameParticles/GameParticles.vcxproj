@@ -136,6 +136,7 @@
     <ClInclude Include="DO_NOT_MODIFY\WindowsWrapper.h" />
     <ClInclude Include="DO_NOT_MODIFY\WinEventHandler.h" />
     <ClInclude Include="DO_NOT_MODIFY\WinOpenGLDevice.h" />
+    <ClInclude Include="Align16.h" />
     <ClInclude Include="Math\Enum.h" />
     <ClInclude Include="Math\Matrix.h" />
     <ClInclude Include="Math\Vect4D.h" />
