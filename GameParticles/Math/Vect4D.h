@@ -21,7 +21,7 @@ public:
 
 	explicit Vect4D();
 	explicit Vect4D(float tx, float ty, float tz, float tw = 1.0f);
-	~Vect4D();
+	~Vect4D() = default;
 
 	void norm(Vect4D &out);
 	void set(float tx, float ty, float tz, float tw = 1.0f);
@@ -38,19 +38,10 @@ public:
 	float &operator[](VECT_ENUM e);
 
 private:
-
-	// anonymous union
-	union {
-		__m128 row;
-
-		// anonymous struct
-		struct {
-			float x;
-			float y;
-			float z;
-			float w;
-		};
-	};
+	float x;
+	float y;
+	float z;
+	float w;
 };
 
 #endif  

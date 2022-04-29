@@ -9,55 +9,47 @@
 #include "Matrix.h"
 
 Matrix::Matrix() { // constructor for the matrix
-	//m0 = 0.0f;
-	//m1 = 0.0f;
-	//m2 = 0.0f;
-	//m3 = 0.0f;
-	row_0 = _mm_setzero_ps();
+	m0 = 0.0f;
+	m1 = 0.0f;
+	m2 = 0.0f;
+	m3 = 0.0f;
 
-	//m4 = 0.0f;
-	//m5 = 0.0f;
-	//m6 = 0.0f;
-	//m7 = 0.0f;
-	row_1 = _mm_setzero_ps();
+	m4 = 0.0f;
+	m5 = 0.0f;
+	m6 = 0.0f;
+	m7 = 0.0f;
 
-	//m8 = 0.0f;
-	//m9 = 0.0f;
-	//m10 = 0.0f;
-	//m11 = 0.0f;
-	row_2 = _mm_setzero_ps();
+	m8 = 0.0f;
+	m9 = 0.0f;
+	m10 = 0.0f;
+	m11 = 0.0f;
 
-	//m12 = 0.0f;
-	//m13 = 0.0f;
-	//m14 = 0.0f;
-	//m15 = 0.0f;
-	row_3 = _mm_setzero_ps();
+	m12 = 0.0f;
+	m13 = 0.0f;
+	m14 = 0.0f;
+	m15 = 0.0f;
 }
 
 void Matrix::setIdentMatrix() { // initialize to the identity matrix
-	//m0 = 1.0f;
-	//m1 = 0.0f;
-	//m2 = 0.0f;
-	//m3 = 0.0f;
-	row_0 = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
+	m0 = 1.0f;
+	m1 = 0.0f;
+	m2 = 0.0f;
+	m3 = 0.0f;
 
-	//m4 = 0.0f;
-	//m5 = 1.0f;
-	//m6 = 0.0f;
-	//m7 = 0.0f;
-	row_1 = _mm_set_ps(0.0f, 1.0f, 0.0f, 0.0f);
+	m4 = 0.0f;
+	m5 = 1.0f;
+	m6 = 0.0f;
+	m7 = 0.0f;
 
-	//m8 = 0.0f;
-	//m9 = 0.0f;
-	//m10 = 1.0f;
-	//m11 = 0.0f;
-	row_2 = _mm_set_ps(0.0f, 0.0f, 1.0f, 0.0f);
+	m8 = 0.0f;
+	m9 = 0.0f;
+	m10 = 1.0f;
+	m11 = 0.0f;
 
-	//m12 = 0.0f;
-	//m13 = 0.0f;
-	//m14 = 0.0f;
-	//m15 = 1.0f;
-	row_3 = _mm_set_ps(0.0f, 0.0f, 0.0f, 1.0f);
+	m12 = 0.0f;
+	m13 = 0.0f;
+	m14 = 0.0f;
+	m15 = 1.0f;
 }
 
 void Matrix::get(const MatrixRowEnum row, Vect4D* const t) { // get a row of the matrix

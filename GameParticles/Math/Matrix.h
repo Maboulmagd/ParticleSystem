@@ -36,41 +36,29 @@ public:
 	void SetInverseCameraMatrix();// Used just for inversing camera matrix in main.cpp
 
 private:
+	// ROW 0
+	float m0;
+	float m1;
+	float m2;
+	float m3;
 
-	// anonymous union
-	union {
-		__m128 row_0;
-		__m128 row_1;
-		__m128 row_2;
-		__m128 row_3;
+	// ROW 1
+	float m4;
+	float m5;
+	float m6;
+	float m7;
 
-		// anonymous struct
-		struct {
-			// ROW 0
-			float m0;
-			float m1;
-			float m2;
-			float m3;
+	// ROW 2
+	float m8;
+	float m9;
+	float m10;
+	float m11;
 
-			// ROW 1
-			float m4;
-			float m5;
-			float m6;
-			float m7;
-
-			// ROW 2
-			float m8;
-			float m9;
-			float m10;
-			float m11;
-
-			// ROW 3
-			float m12;
-			float m13;
-			float m14;
-			float m15;
-		};
-	};
+	// ROW 3
+	float m12;
+	float m13;
+	float m14;
+	float m15;
 };
 
 #endif 
